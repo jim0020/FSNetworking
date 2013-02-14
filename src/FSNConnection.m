@@ -80,6 +80,7 @@ NSString* stringForRequestMethod(FSNRequestMethod method) {
 
 @implementation FSNConnection
 
+static NSTimeInterval __defaultTimeoutInterval = 60;
 
 #pragma mark - NSObject
 
@@ -122,6 +123,7 @@ NSString* stringForRequestMethod(FSNRequestMethod method) {
     // - calling clearBlocks may cause an object in the block closure to be released
     // - that may in turn 'own' the connection, and call clearBlocks to properly break retain cycles in all cases.
     self.blocksLock = [NSRecursiveLock new];
+    self.timeoutInterval = __defaultTimeoutInterval ;
     
     return self;
 }
@@ -323,6 +325,16 @@ progressBlock:(FSNProgressBlock)progressBlock {
 #endif
     
     return c;
+}
+
++ (int)defaultTimeoutInterval
+{
+    return __defaultTimeoutInterval;
+}
+
++ (void)setDefaultTimeoutInterval:(NSTimeInterval)interval
+{
+    __defaultTimeoutInterval = interval;
 }
 
 
@@ -763,6 +775,7 @@ void logParameter(FSNRequestMethod method, id key, id val) {
 #endif
     
     [r setHTTPMethod:stringForRequestMethod(self.method)];
+    [r setTimeoutInterval:self.timeoutInterval];
     
 #if FSN_LOG_HEADERS
 #define SET_HEADER(k, v) \
